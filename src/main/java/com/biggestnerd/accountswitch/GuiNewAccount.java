@@ -26,6 +26,8 @@ public class GuiNewAccount extends GuiScreen {
 		passwordField = new GuiTextField(2, fontRendererObj, this.width / 2 - 100, this.height / 4 + 2, 200, 20);
 		this.buttonList.add(done = new GuiButton(0, this.width / 2 - 100, this.height / 4 + 36, "Done"));
 		usernameField.setFocused(true);
+		passwordField.setMaxStringLength(256);
+		usernameField.setMaxStringLength(128);
 	}
 	
 	public void updateScreen() {
