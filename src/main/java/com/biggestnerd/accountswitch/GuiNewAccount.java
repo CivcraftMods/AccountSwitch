@@ -5,6 +5,7 @@ import java.awt.Color;
 import org.lwjgl.input.Keyboard;
 
 import net.minecraft.client.gui.GuiButton;
+import net.minecraft.client.gui.GuiMainMenu;
 import net.minecraft.client.gui.GuiScreen;
 import net.minecraft.client.gui.GuiTextField;
 
@@ -42,8 +43,12 @@ public class GuiNewAccount extends GuiScreen {
 	public void actionPerformed(GuiButton button) {
 		if(button.enabled) {
 			if(button.id == 0) {
-				AccountSwitch.getInstance().getAuthHandler().validateAccount(usernameField.getText().trim(), passwordField.getText().trim());
-				mc.displayGuiScreen(parent);
+				try {
+					AccountSwitch.getInstance().getAuthHandler().validateAccount(usernameField.getText().trim(), passwordField.getText().trim());
+					mc.displayGuiScreen(new GuiMainMenu());
+				} catch (AccountSwitchException ex) {
+					mc.displayGuiScreen(new GuiAccountSwitchError(this, ex));
+				}
 			}
 		}
 	}

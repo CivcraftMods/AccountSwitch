@@ -9,6 +9,7 @@ import java.net.URL;
 import java.net.URLConnection;
 import java.util.UUID;
 
+import com.biggestnerd.accountswitch.AccountSwitchException.ErrorType;
 import com.google.gson.Gson;
 
 import net.minecraft.client.Minecraft;
@@ -23,15 +24,22 @@ public class AuthenticationHandler {
 		this.mc = mc;
 	}
 	
-	public void validateAccount(String username, String password) {
-		Response response = authenticate(username, password);
+	public void validateAccount(String username, String password) throws AccountSwitchException {
+		Response response = null;
+		try {
+			response = authenticate(username, password);
+		} catch (Exception ex) {
+			throw new AccountSwitchException(ErrorType.AUTH, "Error adding account: invalid username or password");
+		}
 		if(response != null) {
 			String accountName = response.getSelectedProfile().getName();
 			String uuid = response.getSelectedProfile().getId();
 			Account acct = new Account(accountName, username, password);
+			Session newSession;
+			newSession = makeSession(response);
 			AccountSwitch.getInstance().getAccountList().addAccount(acct);
 			AccountSwitch.getInstance().saveAccounts();
-			setSession(makeSession(acct));
+			setSession(newSession);
 		}
 	}
 	
@@ -51,8 +59,16 @@ public class AuthenticationHandler {
 			ex.printStackTrace();
 		}
 	}
+	
+	public Session makeSession(Response response) {
+		String username = response.getSelectedProfile().getName();
+		String id = response.getSelectedProfile().getId();
+		String token = response.getToken();
+		boolean legacy = response.getSelectedProfile().isLegacy();
+		return new Session(username, id, token, legacy ? "legacy" : "mojang");
+	}
 
-	public Session makeSession(Account acct) {
+	public Session makeSession(Account acct) throws AccountSwitchException {
 		Response response = authenticate(acct.getUsername(), acct.getPassword());
 		if(response == null) {
 			return new Session("username", UUID.randomUUID().toString(), "token", "legacy");
@@ -61,7 +77,6 @@ public class AuthenticationHandler {
 		String id = response.getSelectedProfile().getId();
 		String token = response.getToken();
 		boolean legacy = response.getSelectedProfile().isLegacy();
-		//username, uuid, token, sessiontype
 		return new Session(username, id, token, legacy ? "legacy" : "mojang");
 	}
 	
@@ -76,7 +91,7 @@ public class AuthenticationHandler {
 		return false;
 	}
 	
-	private Response authenticate(String username, String password) {
+	private Response authenticate(String username, String password) throws AccountSwitchException {
 		Gson gson = new Gson();
 		Response response = null;
 		try {
@@ -85,6 +100,10 @@ public class AuthenticationHandler {
 			response = (Response) gson.fromJson(rString, Response.class);
 		} catch (Exception ex) {
 			ex.printStackTrace();
+			return null;
+		}
+		if(response.getSelectedProfile() == null) {
+			throw new AccountSwitchException(ErrorType.ENCRYPT, "Error switching accounts: incorrect encryption key");
 		}
 		return response;
 	}

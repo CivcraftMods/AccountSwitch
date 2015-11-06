@@ -1,17 +1,18 @@
 package com.biggestnerd.accountswitch;
 
+import java.io.UnsupportedEncodingException;
 import java.util.UUID;
 
 public class Account {
 
 	private String name;
 	private String username;
-	private String password;
+	private byte[] password;
 	
 	public Account(String name, String username, String password) {
 		this.name = name;
 		this.username = username;
-		this.password = password;
+		this.password = AccountSwitch.getInstance().getEncrypt().encrypt(password);
 	}
 
 	public String getName() {
@@ -31,10 +32,15 @@ public class Account {
 	}
 
 	public String getPassword() {
-		return password;
+		try {
+			return new String(AccountSwitch.getInstance().getEncrypt().decrypt(password), "UTF-8").trim();
+		} catch (UnsupportedEncodingException e) {
+			e.printStackTrace();
+		}
+		return "";
 	}
 
 	public void setPassword(String password) {
-		this.password = password;
+		this.password = AccountSwitch.getInstance().getEncrypt().encrypt(password);
 	}
 }

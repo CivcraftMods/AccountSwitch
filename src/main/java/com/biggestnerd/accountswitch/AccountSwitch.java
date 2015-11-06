@@ -6,6 +6,7 @@ import java.io.File;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiButton;
 import net.minecraft.client.gui.GuiMainMenu;
+import net.minecraft.util.Session;
 import net.minecraftforge.client.event.GuiScreenEvent.ActionPerformedEvent;
 import net.minecraftforge.client.event.GuiScreenEvent.DrawScreenEvent;
 import net.minecraftforge.client.event.GuiScreenEvent.InitGuiEvent;
@@ -18,7 +19,7 @@ import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
 import net.minecraftforge.fml.common.gameevent.TickEvent.ClientTickEvent;
 
 
-@Mod(modid="accountswitch", name="Account Switcher", version="v1.1.1")
+@Mod(modid="accountswitch", name="Account Switcher", version="v1.2.0")
 public class AccountSwitch {
 
 	private static AccountSwitch instance;
@@ -29,6 +30,7 @@ public class AccountSwitch {
 	private String currentName;
 	private boolean validSession = true;
 	private long lastSessionCheck = 0;
+	private Encrypt encrypt;
 	
 	@EventHandler
 	public void preInit(FMLPreInitializationEvent event) {
@@ -46,23 +48,24 @@ public class AccountSwitch {
 				ex.printStackTrace();
 			}
 		}
-		accountList = AccountList.load(accountSave);
-		if(accountList == null) {
+		LegacyAccountList legacyList = LegacyAccountList.load(accountSave);
+		accountList = new AccountList();
+		if (legacyList == null){
+			System.out.println("Not legacy");
+			accountList = AccountList.load(accountSave);
+			if(accountList == null) {
+				accountList = new AccountList();
+			}
+			accountList.save(accountSave);
+		} else {
 			accountList = new AccountList();
 		}
-		accountList.save(accountSave);
 		authHandler = new AuthenticationHandler(mc);
 		FMLCommonHandler.instance().bus().register(this);
 		MinecraftForge.EVENT_BUS.register(this);
 		currentName = mc.getSession().getUsername();
 	}
-	
-	public void useAccount(Account acct) {
-		if(acct.getName().equals(currentName) && authHandler.validSession(mc.getSession()))
-			return;
-		authHandler.setSession(authHandler.makeSession(acct));
-	}
-	
+
 	public static AccountSwitch getInstance() {
 		return instance;
 	}
@@ -121,5 +124,17 @@ public class AccountSwitch {
 				mc.displayGuiScreen(new GuiAccountsList(event.gui));
 			}
 		}
+	}
+	
+	public void setEncryptionKey(String key) {
+		encrypt = new Encrypt(key);
+	}
+	
+	public Encrypt getEncrypt() {
+		return encrypt;
+	}
+	
+	public File getSaveFile() {
+		return accountSave;
 	}
 }

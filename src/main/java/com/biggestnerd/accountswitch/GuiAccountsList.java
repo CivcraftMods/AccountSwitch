@@ -10,6 +10,7 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiButton;
 import net.minecraft.client.gui.GuiScreen;
 import net.minecraft.client.gui.GuiSlot;
+import net.minecraft.util.Session;
 
 public class GuiAccountsList extends GuiScreen {
 	
@@ -26,11 +27,16 @@ public class GuiAccountsList extends GuiScreen {
 	}
 	
 	public void initGui() {
+		if(AccountSwitch.getInstance().getEncrypt() == null) {
+			mc.displayGuiScreen(new GuiSetEncryptionKey(this));
+			return;
+		}
 		this.buttonList.clear();
 		this.buttonList.add(addAccountButton = new GuiButton(0, this.width / 2 - 100, this.height - 63, 64, 20, "Add"));
 		this.buttonList.add(useAccountButton = new GuiButton(1, this.width / 2 - 32, this.height - 63, 64, 20, "Use"));
 		this.buttonList.add(deleteAccountButton = new GuiButton(2, this.width / 2 + 36, this.height - 63, 64, 20, "Delete"));
-		this.buttonList.add(new GuiButton(3, this.width / 2 - 100, this.height - 42, "Done"));
+		this.buttonList.add(new GuiButton(4, this.width / 2 - 100, this.height - 42, "Change Encryption Key"));
+		this.buttonList.add(new GuiButton(3, this.width / 2 - 100, this.height - 21, "Done"));
 		this.accountListContainer = new AccountSlot(this.mc);
 		useAccountButton.enabled = false;
 		deleteAccountButton.enabled = false;
@@ -48,8 +54,18 @@ public class GuiAccountsList extends GuiScreen {
 				mc.displayGuiScreen(new GuiNewAccount(this));
 			}
 			if(button.id == 1) {
-				AccountSwitch.getInstance().useAccount(accounts.get(selected));
-				mc.displayGuiScreen(parent);
+				try {
+					Account acct = accounts.get(selected);
+					AuthenticationHandler authHandler = AccountSwitch.getInstance().getAuthHandler();
+					if(acct.getName().equalsIgnoreCase(AccountSwitch.getInstance().getCurrent()) && authHandler.validSession(mc.getSession())) {
+						return;
+					}
+					Session newSession = authHandler.makeSession(acct);
+					authHandler.setSession(newSession);
+					mc.displayGuiScreen(parent);
+				} catch (AccountSwitchException ex) {
+					mc.displayGuiScreen(new GuiAccountSwitchError(this, ex));
+				}
 			}
 			if(button.id == 2) {
 				AccountSwitch.getInstance().getAccountList().remove(accounts.get(selected).getName());
@@ -58,6 +74,9 @@ public class GuiAccountsList extends GuiScreen {
 			}
 			if(button.id == 3) {
 				mc.displayGuiScreen(parent);
+			}
+			if(button.id == 4) {
+				mc.displayGuiScreen(new GuiChangeEncryptionKey(this));
 			}
 		}
 	}
