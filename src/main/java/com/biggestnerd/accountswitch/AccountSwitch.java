@@ -19,7 +19,7 @@ import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
 import net.minecraftforge.fml.common.gameevent.TickEvent.ClientTickEvent;
 
 
-@Mod(modid="accountswitch", name="Account Switcher", version="v1.2.1")
+@Mod(modid="accountswitch", name="Account Switcher", version="v1.2.2")
 public class AccountSwitch {
 
 	private static AccountSwitch instance;

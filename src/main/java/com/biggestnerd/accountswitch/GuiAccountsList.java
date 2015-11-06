@@ -6,6 +6,8 @@ import java.util.ArrayList;
 
 import org.lwjgl.input.Keyboard;
 
+import com.biggestnerd.accountswitch.AccountSwitchException.ErrorType;
+
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiButton;
 import net.minecraft.client.gui.GuiScreen;
@@ -40,12 +42,15 @@ public class GuiAccountsList extends GuiScreen {
 		this.accountListContainer = new AccountSlot(this.mc);
 		useAccountButton.enabled = false;
 		deleteAccountButton.enabled = false;
-		this.accounts = AccountSwitch.getInstance().getAccountList().getAccounts();
 	}
 	
 	public void handleMouseInput() throws IOException {
 		super.handleMouseInput();
 		this.accountListContainer.handleMouseInput();
+	}
+	
+	public void updateScreen() {
+		accounts = AccountSwitch.getInstance().getAccountList().getAccounts();
 	}
 	
 	public void actionPerformed(GuiButton button) {
@@ -65,6 +70,8 @@ public class GuiAccountsList extends GuiScreen {
 					mc.displayGuiScreen(parent);
 				} catch (AccountSwitchException ex) {
 					mc.displayGuiScreen(new GuiAccountSwitchError(this, ex));
+				} catch (Exception ex) {
+					mc.displayGuiScreen(new GuiAccountSwitchError(this, new AccountSwitchException(ErrorType.ENCRYPT, "Error switching accounts: invalid encryption key")));
 				}
 			}
 			if(button.id == 2) {
