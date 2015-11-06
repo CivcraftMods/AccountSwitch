@@ -43,6 +43,11 @@ public class GuiChangeEncryptionKey extends GuiScreen {
 		if(button.enabled) {
 			if(button.id == 0) {
 				if(oldKeyField.getText().trim().equals(AccountSwitch.getInstance().getEncrypt().getCurrentKey())) {
+					Encrypt newEncrypt = new Encrypt(newKeyField.getText().trim());
+					for(Account acct : AccountSwitch.getInstance().getAccountList().getAccounts()) {
+						acct.changeEncryption(newEncrypt);
+					}
+					AccountSwitch.getInstance().saveAccounts();
 					AccountSwitch.getInstance().setEncryptionKey(newKeyField.getText().trim());
 				}
 				mc.displayGuiScreen(parent);

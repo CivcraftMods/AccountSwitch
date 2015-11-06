@@ -14,6 +14,12 @@ public class Account {
 		this.username = username;
 		this.password = AccountSwitch.getInstance().getEncrypt().encrypt(password);
 	}
+	
+	public Account(String name, String username, byte[] password) {
+		this.name = name;
+		this.username = username;
+		this.password = password;
+	}
 
 	public String getName() {
 		return name;
@@ -42,5 +48,15 @@ public class Account {
 
 	public void setPassword(String password) {
 		this.password = AccountSwitch.getInstance().getEncrypt().encrypt(password);
+	}
+	
+	public void changeEncryption(Encrypt newCrypt) {
+		try {
+			String pass = new String(AccountSwitch.getInstance().getEncrypt().decrypt(password), "UTF-8").trim();
+			byte[] newPass = newCrypt.encrypt(pass);
+			this.password = newPass;
+		} catch (UnsupportedEncodingException e) {
+			e.printStackTrace();
+		}
 	}
 }

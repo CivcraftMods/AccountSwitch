@@ -19,7 +19,7 @@ import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
 import net.minecraftforge.fml.common.gameevent.TickEvent.ClientTickEvent;
 
 
-@Mod(modid="accountswitch", name="Account Switcher", version="v1.2.0")
+@Mod(modid="accountswitch", name="Account Switcher", version="v1.2.1")
 public class AccountSwitch {
 
 	private static AccountSwitch instance;
@@ -136,5 +136,10 @@ public class AccountSwitch {
 	
 	public File getSaveFile() {
 		return accountSave;
+	}
+	
+	public void replaceAccountList(AccountList newList) {
+		this.accountList = newList;
+		newList.save(accountSave);
 	}
 }
