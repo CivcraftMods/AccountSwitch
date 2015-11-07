@@ -24,7 +24,7 @@ public class GuiSetEncryptionKey extends GuiScreen {
 		this.buttonList.add(save = new GuiButton(0, this.width / 2 - 100, this.height / 4 + 4, "Set Key"));
 		keyField = new GuiTextField(1, mc.fontRendererObj, this.width / 2 - 100, this.height / 4 - 22, 200, 20);
 		keyField.setFocused(true);
-		keyField.setMaxStringLength(16);
+		keyField.setMaxStringLength(256);
 	}
 	
 	public void onGuiClosed() {
