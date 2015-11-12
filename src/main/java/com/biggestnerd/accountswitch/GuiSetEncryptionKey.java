@@ -1,6 +1,7 @@
 package com.biggestnerd.accountswitch;
 
 import java.awt.Color;
+import java.security.SecureRandom;
 
 import org.lwjgl.input.Keyboard;
 
@@ -24,7 +25,7 @@ public class GuiSetEncryptionKey extends GuiScreen {
 		this.buttonList.add(save = new GuiButton(0, this.width / 2 - 100, this.height / 4 + 4, "Set Key"));
 		keyField = new GuiTextField(1, mc.fontRendererObj, this.width / 2 - 100, this.height / 4 - 22, 200, 20);
 		keyField.setFocused(true);
-		keyField.setMaxStringLength(256);
+		keyField.setMaxStringLength(16);
 	}
 	
 	public void onGuiClosed() {
@@ -39,7 +40,15 @@ public class GuiSetEncryptionKey extends GuiScreen {
 	public void actionPerformed(GuiButton button) {
 		if(button.enabled) {
 			if(button.id == 0) {
-				AccountSwitch.getInstance().setEncryptionKey(keyField.getText().trim());
+				byte[] salt = new byte[8];
+				if(AccountSwitch.getInstance().getAccountList().getSalt() == null) {
+					SecureRandom secRand = new SecureRandom();
+					secRand.nextBytes(salt);
+				} else {
+					salt = AccountSwitch.getInstance().getAccountList().getSalt();
+				}
+				AccountSwitch.getInstance().setEncryptionKey(keyField.getText().trim(), salt);
+				AccountSwitch.getInstance().saveAccounts();
 				LegacyAccountList legacy = LegacyAccountList.load(AccountSwitch.getInstance().getSaveFile());
 				if(legacy != null) {
 					legacy.migrate();

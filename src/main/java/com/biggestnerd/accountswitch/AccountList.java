@@ -3,6 +3,7 @@ package com.biggestnerd.accountswitch;
 import java.io.File;
 import java.io.FileReader;
 import java.io.FileWriter;
+import java.security.SecureRandom;
 import java.util.ArrayList;
 import java.util.HashMap;
 
@@ -12,9 +13,13 @@ import com.google.gson.GsonBuilder;
 public class AccountList {
 
 	private HashMap<String, Account> accounts;
+	private byte[] salt;
 	
 	public AccountList() {
 		this.accounts = new HashMap<String, Account>();
+		salt = new byte[8];
+		SecureRandom secRand = new SecureRandom();
+		secRand.nextBytes(salt);
 	}
 	
 	public void addAccount(Account acct) {
@@ -33,6 +38,14 @@ public class AccountList {
 	
 	public void remove(String name) {
 		accounts.remove(name);
+	}
+	
+	public byte[] getSalt() {
+		return salt;
+	}
+	
+	public void setSalt(byte[] salt) {
+		this.salt = salt;
 	}
 	
 	public void save(File f) {

@@ -1,6 +1,7 @@
 package com.biggestnerd.accountswitch;
 
 import java.awt.Color;
+import java.security.SecureRandom;
 
 import org.lwjgl.input.Keyboard;
 
@@ -25,9 +26,9 @@ public class GuiChangeEncryptionKey extends GuiScreen {
 		this.buttonList.add(save = new GuiButton(0, this.width / 2 - 100, this.height / 4 + 66, "Set Key"));
 		oldKeyField = new GuiTextField(1, mc.fontRendererObj, this.width / 2 - 100, this.height / 4 - 10, 200, 20);
 		oldKeyField.setFocused(true);
-		oldKeyField.setMaxStringLength(256);
+		oldKeyField.setMaxStringLength(16);
 		newKeyField = new GuiTextField(2, mc.fontRendererObj, this.width / 2 - 100, this.height / 4 + 25, 200, 20);
-		newKeyField.setMaxStringLength(256);
+		newKeyField.setMaxStringLength(16);
 	}
 	
 	public void onGuiClosed() {
@@ -43,12 +44,16 @@ public class GuiChangeEncryptionKey extends GuiScreen {
 		if(button.enabled) {
 			if(button.id == 0) {
 				if(oldKeyField.getText().trim().equals(AccountSwitch.getInstance().getEncrypt().getCurrentKey())) {
-					Encrypt newEncrypt = new Encrypt(newKeyField.getText().trim());
+					SecureRandom secRand = new SecureRandom();
+					byte[] salt = new byte[8];
+					secRand.nextBytes(salt);
+					Encrypt newEncrypt = new Encrypt(newKeyField.getText().trim(), salt);
 					for(Account acct : AccountSwitch.getInstance().getAccountList().getAccounts()) {
 						acct.changeEncryption(newEncrypt);
 					}
+					AccountSwitch.getInstance().getAccountList().setSalt(salt);
 					AccountSwitch.getInstance().saveAccounts();
-					AccountSwitch.getInstance().setEncryptionKey(newKeyField.getText().trim());
+					AccountSwitch.getInstance().setEncryptionKey(newKeyField.getText().trim(), salt);
 				}
 				mc.displayGuiScreen(parent);
 			}

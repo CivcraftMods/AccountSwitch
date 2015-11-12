@@ -126,8 +126,9 @@ public class AccountSwitch {
 		}
 	}
 	
-	public void setEncryptionKey(String key) {
-		encrypt = new Encrypt(key);
+	public void setEncryptionKey(String key, byte[] salt) {
+		encrypt = new Encrypt(key, salt);
+		saveAccounts();
 	}
 	
 	public Encrypt getEncrypt() {

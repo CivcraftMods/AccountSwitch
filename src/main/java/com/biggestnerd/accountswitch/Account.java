@@ -1,18 +1,21 @@
 package com.biggestnerd.accountswitch;
 
 import java.io.UnsupportedEncodingException;
-import java.util.UUID;
+import java.security.SecureRandom;
 
 public class Account {
 
 	private String name;
 	private String username;
 	private byte[] password;
+	private byte[] iv;
 	
 	public Account(String name, String username, String password) {
 		this.name = name;
 		this.username = username;
-		this.password = AccountSwitch.getInstance().getEncrypt().encrypt(password);
+		iv = new byte[16];
+		new SecureRandom().nextBytes(iv);
+		this.password = AccountSwitch.getInstance().getEncrypt().encrypt(password, iv);
 	}
 	
 	public Account(String name, String username, byte[] password) {
@@ -39,7 +42,7 @@ public class Account {
 
 	public String getPassword() {
 		try {
-			return new String(AccountSwitch.getInstance().getEncrypt().decrypt(password), "UTF-8").trim();
+			return new String(AccountSwitch.getInstance().getEncrypt().decrypt(password, iv), "UTF-8").trim();
 		} catch (UnsupportedEncodingException e) {
 			e.printStackTrace();
 		}
@@ -47,13 +50,21 @@ public class Account {
 	}
 
 	public void setPassword(String password) {
-		this.password = AccountSwitch.getInstance().getEncrypt().encrypt(password);
+		this.password = AccountSwitch.getInstance().getEncrypt().encrypt(password, iv);
+	}
+	
+	public byte[] getIv() {
+		return iv;
+	}
+	
+	public void setIv(byte[] iv) {
+		this.iv = iv;
 	}
 	
 	public void changeEncryption(Encrypt newCrypt) {
 		try {
-			String pass = new String(AccountSwitch.getInstance().getEncrypt().decrypt(password), "UTF-8").trim();
-			byte[] newPass = newCrypt.encrypt(pass);
+			String pass = new String(AccountSwitch.getInstance().getEncrypt().decrypt(password, iv), "UTF-8").trim();
+			byte[] newPass = newCrypt.encrypt(pass, iv);
 			this.password = newPass;
 		} catch (UnsupportedEncodingException e) {
 			e.printStackTrace();
